@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AircraftController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -23,7 +25,9 @@ Route::middleware(['auth:api'])->group(function () {
     
 });
 
-Route::put('{callsign}/location', [AuthController::class, 'register']);
+//Route::put('{callsign}/location', [AuthController::class, 'register']);
+
+Route::get('aircraft/generate', [AircraftController::class, 'generateKey']);
 
 Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('auth/login', [AuthController::class, 'login']);
