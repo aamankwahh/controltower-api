@@ -15,10 +15,10 @@ return new class extends Migration
     {
         Schema::create('aircraft', function (Blueprint $table) {
             $table->id();
-            $table->enum('type',['PRIVATE,AIRLINER']);
+            $table->enum('type',['PRIVATE','AIRLINER'])->default('PRIVATE');
             $table->string('callsign');
-            $table->enum('state', ['PARKED', 'AIRBORNE','APPROACH','LANDED']);
-            $table->string('actions');
+            $table->enum('state', ['PARKED', 'AIRBORNE','APPROACH','LANDED'])->default('PARKED');
+            $table->string('actions')->nullable();
             $table->double('latitude')->nullable();
             $table->double('longitude')->nullable();
             $table->double('altitude')->nullable();
