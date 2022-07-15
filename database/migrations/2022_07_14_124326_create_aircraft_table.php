@@ -17,8 +17,8 @@ return new class extends Migration
             $table->id();
             $table->enum('type',['PRIVATE','AIRLINER'])->default('PRIVATE');
             $table->string('callsign');
-            $table->enum('state', ['PARKED', 'AIRBORNE','APPROACH','LANDED'])->default('PARKED');
-            $table->string('actions')->nullable();
+            $table->string('state')->nullable();
+            $table->string('action')->nullable();
             $table->double('latitude')->nullable();
             $table->double('longitude')->nullable();
             $table->double('altitude')->nullable();

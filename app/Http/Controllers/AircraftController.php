@@ -37,46 +37,55 @@ class AircraftController extends Controller
     public function setState(Request $request){
 
         $allowable_actions = config('constants.allowable_actions'); //Array of correct verbs
+        $allowable_states=config('constants.allowable_states');
         $state_actions = config('constants.state_actions');
         $state=$request->state; // get state value
         $callsign = $request->callsign;
-        $next_state=$state_actions[$state];
-
-       // return response()->json(["message"=>$state_actions['APPROACH']]);
-
-        if(!in_array($state, $allowable_actions)){
-            return response('Bad Request', 409);
-        }
-        
-        try {
-          
-        
-        $tracker_column= strtolower("can_".$state);
        
+        //get aircraft and tracker
         $tracker = Tracker::firstOrFail();
         $aircraft = Aircraft::where('callsign','=',$callsign)->firstOrFail();
 
-        if($tracker->$tracker_column){
-            //check weather
-            $aircraft->state=$next_state;
+       // return response()->json(["message"=>$state_actions['APPROACH']]);
+        //check request is an action or a state
+        if(in_array($state, $allowable_actions)){
+            
+            //it's an action
+            $tracker_column= strtolower("can_".$state);
+    
+            if($tracker->$tracker_column){
+                
+                $aircraft->action=$state;
+                $aircraft->state=null;
+                $aircraft->save();
+    
+                $tracker->$tracker_column=false;
+                $tracker->save();
+    
+                return response('No Content',204);
+            }else{
+
+                return response('Conflict',409);
+            }
+            
+        }else if(in_array($state, $allowable_states)){
+            //it's a state
+            $tracker_column = "can_".$aircraft->action;
+            $aircraft->action=null;
+            $aircraft->state=$state;
             $aircraft->save();
 
-            $tracker->$tracker_column=false;
+            $tracker->$tracker_column=true;
             $tracker->save();
 
-            return response('No Content',204);
-        }else{
 
-            return response('Conflict',409);
+        }else
+        {
+            return response('Bad Request', 409);
         }
         
-       // return response()->json(["col"=>$tracker_column]);
-        } catch (\Throwable $th) {
-            //throw $th;
-            return response('Unable to process',500);
-        }
-
-    
+       
         
     }
-}
+    }
+

@@ -21,5 +21,11 @@ class AircraftSeeder extends Seeder
         $craft1->callsign="AR101";
         $craft1->state="PARKED";
         $craft1->save();
+
+        $craft2 = new Aircraft();
+        $craft2->type="AIRLINER";
+        $craft2->callsign="AR102";
+        $craft2->state="AIRBORNE";
+        $craft2->save();
     }
 }

@@ -19,5 +19,10 @@ return [
         'APPROACH',
         'TAKEOFF',
         'LAND'
+    ],
+    'allowable_states'=>[
+        'AIRBORNE',
+        'LANDED',
+        'PARKED'
     ]
 ];
