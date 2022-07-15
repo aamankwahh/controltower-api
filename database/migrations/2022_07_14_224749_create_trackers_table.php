@@ -16,9 +16,9 @@ return new class extends Migration
         Schema::create('trackers', function (Blueprint $table) {
             $table->id();
            
-            $table->boolean('can_land')->nullable();
-            $table->boolean('can_takeoff')->nullable();
-            $table->boolean('can_approach')->nullable();
+            $table->boolean('can_land')->default(true);
+            $table->boolean('can_takeoff')->default(true);
+            $table->boolean('can_approach')->default(true);
             $table->integer('large_spots_occupied')->default(0);
             $table->integer('small_spots_occupied')->default(0);
             $table->integer('total_large_spots')->default(5);
