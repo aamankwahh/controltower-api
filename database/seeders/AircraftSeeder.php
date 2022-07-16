@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Aircraft;
+use App\Models\Tracker;
 
 class AircraftSeeder extends Seeder
 {
@@ -27,5 +28,11 @@ class AircraftSeeder extends Seeder
         $craft2->callsign="AR102";
         $craft2->state="AIRBORNE";
         $craft2->save();
+
+
+        $tracker = Tracker::firstOrFail();
+
+        $tracker->large_spots_occupied=2;
+        $tracker->save();
     }
 }

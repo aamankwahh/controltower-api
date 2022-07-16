@@ -22,8 +22,9 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
-            AircraftSeeder::class,
             TrackerSeeder::class,
+            AircraftSeeder::class,
+           
             // PostSeeder::class,
             // CommentSeeder::class,
         ]);

@@ -17,7 +17,7 @@ class TrackerSeeder extends Seeder
     {
         //
         $tracker = new Tracker();
-    
+        
         $tracker->save();
 
     }

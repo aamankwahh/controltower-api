@@ -19,6 +19,7 @@ return new class extends Migration
             $table->boolean('can_land')->default(true);
             $table->boolean('can_takeoff')->default(true);
             $table->boolean('can_approach')->default(true);
+            $table->boolean('runway_available')->default(true);
             $table->integer('large_spots_occupied')->default(0);
             $table->integer('small_spots_occupied')->default(0);
             $table->integer('total_large_spots')->default(5);
