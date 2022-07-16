@@ -33,6 +33,29 @@ class AircraftController extends Controller
 
     }
 
+    /**
+     * @OA\Get(
+     *     path="/{callsign}/intent",
+     *     tags={"callsign"},
+     *     summary="Returns pet inventories by status",
+     *     description="Returns a map of status codes to quantities",
+     *     operationId="getInventory",
+     *     @OA\Response(
+     *         response=200,
+     *         description="successful operation",
+     *         @OA\JsonContent(
+     *             @OA\AdditionalProperties(
+     *                 type="integer",
+     *                 format="int32"
+     *             )
+     *         )
+     *     ),
+     *     security={
+     *         {"api_key": {}}
+     *     }
+     * )
+     */
+
     public function setState(Request $request)
     {
 
