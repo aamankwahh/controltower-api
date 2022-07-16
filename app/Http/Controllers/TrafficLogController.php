@@ -4,18 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Models\TrafficLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TrafficLogController extends Controller
 {
+    //
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * List table records
+	 * @param  \Illuminate\Http\Request
+     * @param string $fieldname //filter records by a table field
+     * @param string $fieldvalue //filter value
+     * @return \Illuminate\View\View
      */
-    public function index()
-    {
-        //
-    }
+	function index(Request $request, $fieldname = null , $fieldvalue = null){
+		$query = TrafficLog::query();
+        $query->join("aircraft", "traffic_logs.aircraft_id", "=", "aircraft.id");
+		if($request->search){
+			$search = trim($request->search);
+			TrafficLog::search($query, $search);
+		}
+		$orderby = $request->orderby ?? "traffic_logs.id";
+		$ordertype = $request->ordertype ?? "desc";
+		$query->orderBy($orderby, $ordertype);
+		if($fieldname){
+			$query->where($fieldname , $fieldvalue); //filter by a single field name
+		}
+		$records = $this->paginate($query, TrafficLog::listFields());
+        Log::info($records);
+		return $this->respond($records);
+	}
 
     /**
      * Show the form for creating a new resource.

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AircraftController;
+use App\Http\Controllers\TrafficLogController;
 use App\Http\Controllers\AccountController;
 
 
@@ -34,13 +35,13 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::any('aircraft/delete/{rec_id}', [AircraftController::class,'delete']);
 
     /* routes for Traffic Controller  */	
-	Route::get('traffic', [TrafficController::class,'index']);
-	Route::get('traffic/index', [TrafficController::class,'index']);
-	Route::get('traffic/index/{filter?}/{filtervalue?}', [TrafficController::class,'index']);	
-	Route::get('traffic/view/{rec_id}', [TrafficController::class,'view']);	
-	Route::post('traffic/add', [TrafficController::class,'add']);	
-	Route::any('traffic/edit/{rec_id}', [TrafficController::class,'edit']);	
-	Route::any('traffic/delete/{rec_id}', [TrafficController::class,'delete']);
+	Route::get('traffic', [TrafficLogController::class,'index']);
+	Route::get('traffic/index', [TrafficLogController::class,'index']);
+	Route::get('traffic/index/{filter?}/{filtervalue?}', [TrafficLogController::class,'index']);	
+	Route::get('traffic/view/{rec_id}', [TrafficLogController::class,'view']);	
+	Route::post('traffic/add', [TrafficLogController::class,'add']);	
+	Route::any('traffic/edit/{rec_id}', [TrafficLogController::class,'edit']);	
+	Route::any('traffic/delete/{rec_id}', [TrafficLogController::class,'delete']);
 });
 
 //Route::put('{callsign}/location', [AuthController::class, 'register']);

@@ -31,7 +31,7 @@ class Aircraft extends Model
      */
 	public static function listFields(){
 		return [ 
-			"id", 
+			"aircraft.id as aircraft_id", 
 			"type", 
 			"callsign", 
 			"state" 
