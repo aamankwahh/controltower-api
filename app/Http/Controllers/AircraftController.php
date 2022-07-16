@@ -36,12 +36,12 @@ class AircraftController extends Controller
     /**
      * @OA\Get(
      *     path="/{callsign}/intent",
-     *     tags={"callsign"},
-     *     summary="Returns pet inventories by status",
-     *     description="Returns a map of status codes to quantities",
-     *     operationId="getInventory",
+     *     tags={"Request State Change"},
+     *     summary="Changes the state of an aircraft ",
+     *     description="Returns http status code",
+     *     operationId="setState",
      *     @OA\Response(
-     *         response=200,
+     *         response=204,
      *         description="successful operation",
      *         @OA\JsonContent(
      *             @OA\AdditionalProperties(
