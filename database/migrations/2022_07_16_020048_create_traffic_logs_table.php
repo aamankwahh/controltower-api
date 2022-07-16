@@ -15,6 +15,10 @@ return new class extends Migration
     {
         Schema::create('traffic_logs', function (Blueprint $table) {
             $table->id();
+            //$table->unsignedInteger('aircraft_id');
+            $table->bigInteger('aircraft_id')->unsigned();
+            $table->boolean('accepted');
+            $table->foreign('aircraft_id')->references('id')->on('aircraft');
             $table->timestamps();
         });
     }
