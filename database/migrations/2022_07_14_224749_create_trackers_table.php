@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('trackers', function (Blueprint $table) {
             $table->id();
            
-            $table->boolean('can_land')->default(true);
+            $table->boolean('can_landed')->default(true);
             $table->boolean('can_takeoff')->default(true);
             $table->boolean('can_approach')->default(true);
             $table->boolean('runway_available')->default(true);

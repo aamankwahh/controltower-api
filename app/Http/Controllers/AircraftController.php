@@ -6,6 +6,7 @@ use App\Models\Aircraft;
 use App\Models\Tracker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 
 class AircraftController extends Controller
 {
@@ -40,57 +41,59 @@ class AircraftController extends Controller
         $state = $request->state; // get state value
         $callsign = $request->callsign;
         $aircraft = Aircraft::where('callsign', '=', $callsign)->firstOrFail();
-         
-         $tracker = Tracker::firstOrFail();
 
+        $tracker = Tracker::firstOrFail();
+
+        
         if ($this->actionIsNotAllowed($state, $aircraft, $allowable_actions)) {
             return response('Conflict', 409);
         }
 
-        
         $spot_is_available = $this->checkAvailableSpot($tracker, $aircraft);
 
         if ($state == "APPROACH" && !$spot_is_available) {
             return response('Conflict', 409);
         }
 
-       
-
-        $tracker_column =strtolower("can_".$state);
+        $tracker_column = strtolower("can_" . $state);
 
         //
-        if($tracker->$tracker_column!=null){
+        if (Schema::hasColumn('trackers', $tracker_column)) {
 
             $is_allowed = $tracker->$tracker_column;
 
-            if($is_allowed){
+            if ($is_allowed && $tracker->runway_available) {
 
-                $aircraft->state= $state;
+                $aircraft->state = $state;
                 $aircraft->save();
-    
-                $tracker->$tracker_column=false;
-                $tracker->runway_available=false;
-    
+
+                $tracker->$tracker_column = false;
+                $tracker->runway_available = false;
+
                 $tracker->save();
-    
-                return response('No Content',204);
-            }else{
-                return response('Conflict',409);
+
+                return response('No Content', 204);
+            } else {
+                return response('Conflict', 409);
             }
 
-           
-        }else
-        {
+        } else {
 
-            
-            $tracker_column = strtolower("can_".$aircraft->state);
+            $tracker_column = strtolower("can_" . $aircraft->state);
 
             //return response($tracker->$tracker_column,200);
+            if (Schema::hasColumn('trackers', $tracker_column)); //check whether  table has column
+            {
+                
+                if ($tracker->$tracker_column == 0) {
 
-            if($tracker->$tracker_column){
-                $tracker->$tracker_column=false;
+                    $tracker->$tracker_column = true;
+                    $tracker->save();
+    
+                }
             }
            
+
             $aircraft->state = $state;
             $aircraft->save();
 
@@ -126,8 +129,6 @@ class AircraftController extends Controller
         // }
 
         // return response()->json($allowable_actions[$state]['next_state']);
-
-       
 
         // //check request is an action or a state
         // if (array_key_exists($state, $allowable_actions)) {
@@ -319,12 +320,10 @@ class AircraftController extends Controller
         $not_allowed = true;
         if (array_key_exists($state, $allowable_actions)) {
 
-           
             if ($allowable_actions[$aircraft->state]['next_state'] == $state) {
                 $not_allowed = false;
             }
 
-            
         }
 
         return $not_allowed;
