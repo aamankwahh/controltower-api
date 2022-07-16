@@ -17,22 +17,65 @@ class AircraftSeeder extends Seeder
     public function run()
     {
         //
-        $craft1 = new Aircraft();
-        $craft1->type="AIRLINER";
-        $craft1->callsign="AR101";
-        $craft1->state="PARKED";
-        $craft1->save();
-
-        $craft2 = new Aircraft();
-        $craft2->type="AIRLINER";
-        $craft2->callsign="AR102";
-        $craft2->state="AIRBORNE";
-        $craft2->save();
-
-
         $tracker = Tracker::firstOrFail();
+        for ($i=100; $i <104 ; $i++) { 
+            # code...
+            $craft = new Aircraft();
+            $craft->type="AIRLINER";
+            $craft->callsign="AR".$i;
+            $craft->state="PARKED";
+            $craft->save();
 
-        $tracker->large_spots_occupied=2;
-        $tracker->save();
+            $tracker->large_spots_occupied+=1;
+            $tracker->save();
+        }
+
+        //SMALL planes
+        for ($i=200; $i <208 ; $i++) { 
+            # code...
+            $craft = new Aircraft();
+            $craft->type="PRIVATE";
+            $craft->callsign="AR".$i;
+            $craft->state="PARKED";
+            $craft->save();
+
+            $tracker->small_spots_occupied+=1;
+            $tracker->save();
+        }
+
+
+         //SMALL planes
+         for ($i=104; $i <107 ; $i++) { 
+            # code...
+            $craft = new Aircraft();
+            $craft->type="AIRLINER";
+            $craft->callsign="AR".$i;
+            $craft->state="AIRBORNE";
+            $craft->save();
+        }
+
+        for ($i=208; $i <212 ; $i++) { 
+            # code...
+            $craft = new Aircraft();
+            $craft->type="PRIVATE";
+            $craft->callsign="AR".$i;
+            $craft->state="AIRBORNE";
+            $craft->save();
+        }
+
+
+        for ($i=104; $i <107 ; $i++) { 
+            # code...
+            $craft = new Aircraft();
+            $craft->type="PRIVATE";
+            $craft->callsign="AR".$i;
+            $craft->state="AIRBORNE";
+            $craft->save();
+        }
+       
+
+       
+
+       
     }
 }

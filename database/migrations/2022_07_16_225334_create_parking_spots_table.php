@@ -15,6 +15,11 @@ return new class extends Migration
     {
         Schema::create('parking_spots', function (Blueprint $table) {
             $table->id();
+            $table->string('spot_name');
+            $table->enum('spot_type',['SMALL','LARGE'])->default('SMALL');
+            $table->boolean('available');
+            $table->bigInteger('aircraft_id')->unsigned()->nullable();
+            $table->foreign('aircraft_id')->references('id')->on('aircraft');
             $table->timestamps();
         });
     }
