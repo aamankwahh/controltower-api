@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AircraftController;
+use App\Http\Controllers\AccountController;
 
 
 /*
@@ -22,7 +23,24 @@ use App\Http\Controllers\AircraftController;
 // });
 
 Route::middleware(['auth:api'])->group(function () {
-    
+    Route::get('account/currentuserdata', [AccountController::class, 'currentuserdata']);
+    /* routes for Aircraft Controller  */	
+	Route::get('aircraft', [AircraftController::class,'index']);
+	Route::get('aircraft/index', [AircraftController::class,'index']);
+	Route::get('aircraft/index/{filter?}/{filtervalue?}', [AircraftController::class,'index']);	
+	Route::get('aircraft/view/{rec_id}', [AircraftController::class,'view']);	
+	Route::post('aircraft/add', [AircraftController::class,'add']);	
+	Route::any('aircraft/edit/{rec_id}', [AircraftController::class,'edit']);	
+	Route::any('aircraft/delete/{rec_id}', [AircraftController::class,'delete']);
+
+    /* routes for Traffic Controller  */	
+	Route::get('traffic', [TrafficController::class,'index']);
+	Route::get('traffic/index', [TrafficController::class,'index']);
+	Route::get('traffic/index/{filter?}/{filtervalue?}', [TrafficController::class,'index']);	
+	Route::get('traffic/view/{rec_id}', [TrafficController::class,'view']);	
+	Route::post('traffic/add', [TrafficController::class,'add']);	
+	Route::any('traffic/edit/{rec_id}', [TrafficController::class,'edit']);	
+	Route::any('traffic/delete/{rec_id}', [TrafficController::class,'delete']);
 });
 
 //Route::put('{callsign}/location', [AuthController::class, 'register']);
