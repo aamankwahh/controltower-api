@@ -7,10 +7,34 @@ use App\Models\Tracker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
 class AircraftController extends Controller
 {
     //
+    /**
+     * List table records
+	 * @param  \Illuminate\Http\Request
+     * @param string $fieldname //filter records by a table field
+     * @param string $fieldvalue //filter value
+     * @return \Illuminate\View\View
+     */
+	function index(Request $request, $fieldname = null , $fieldvalue = null){
+		$query = Aircraft::query();
+		if($request->search){
+			$search = trim($request->search);
+			Aircraft::search($query, $search);
+		}
+		$orderby = $request->orderby ?? "aircraft.id";
+		$ordertype = $request->ordertype ?? "desc";
+		$query->orderBy($orderby, $ordertype);
+		if($fieldname){
+			$query->where($fieldname , $fieldvalue); //filter by a single field name
+		}
+		$records = $this->paginate($query, Aircraft::listFields());
+        Log::info($records);
+		return $this->respond($records);
+	}
 
     public function updateLocation(Request $request)
     {
