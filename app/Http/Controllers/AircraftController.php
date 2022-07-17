@@ -5,36 +5,37 @@ namespace App\Http\Controllers;
 use App\Models\Aircraft;
 use App\Models\Tracker;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class AircraftController extends Controller
 {
     //
     /**
      * List table records
-	 * @param  \Illuminate\Http\Request
+     * @param  \Illuminate\Http\Request
      * @param string $fieldname //filter records by a table field
      * @param string $fieldvalue //filter value
      * @return \Illuminate\View\View
      */
-	function index(Request $request, $fieldname = null , $fieldvalue = null){
-		$query = Aircraft::query();
-		if($request->search){
-			$search = trim($request->search);
-			Aircraft::search($query, $search);
-		}
-		$orderby = $request->orderby ?? "aircraft.id";
-		$ordertype = $request->ordertype ?? "desc";
-		$query->orderBy($orderby, $ordertype);
-		if($fieldname){
-			$query->where($fieldname , $fieldvalue); //filter by a single field name
-		}
-		$records = $this->paginate($query, Aircraft::listFields());
+    public function index(Request $request, $fieldname = null, $fieldvalue = null)
+    {
+        $query = Aircraft::query();
+        if ($request->search) {
+            $search = trim($request->search);
+            Aircraft::search($query, $search);
+        }
+        $orderby = $request->orderby ?? "aircraft.id";
+        $ordertype = $request->ordertype ?? "desc";
+        $query->orderBy($orderby, $ordertype);
+        if ($fieldname) {
+            $query->where($fieldname, $fieldvalue); //filter by a single field name
+        }
+        $records = $this->paginate($query, Aircraft::listFields());
         Log::info($records);
-		return $this->respond($records);
-	}
+        return $this->respond($records);
+    }
 
     public function updateLocation(Request $request)
     {
@@ -91,7 +92,6 @@ class AircraftController extends Controller
 
         $tracker = Tracker::firstOrFail();
 
-        
         if ($this->actionIsNotAllowed($state, $aircraft, $allowable_actions)) {
             return response('Conflict', 409);
         }
@@ -131,15 +131,14 @@ class AircraftController extends Controller
             //return response($tracker->$tracker_column,200);
             if (Schema::hasColumn('trackers', $tracker_column)); //check whether  table has column
             {
-                
+
                 if ($tracker->$tracker_column == 0) {
 
                     $tracker->$tracker_column = true;
                     $tracker->save();
-    
+
                 }
             }
-           
 
             $aircraft->state = $state;
             $aircraft->save();
@@ -170,176 +169,11 @@ class AircraftController extends Controller
 
         }
 
-        // if (Schema::hasColumn('users', 'email')); //check whether users table has email column
-        // {
-        //     //your logic
-        // }
-
-        // return response()->json($allowable_actions[$state]['next_state']);
-
-        // //check request is an action or a state
-        // if (array_key_exists($state, $allowable_actions)) {
-        //     //it's an action
-
-        //     $action = $state; // assign state as action
-        //     //check if aircraft is already in required state
-        //     if ($aircraft->state == $allowable_actions[$action]) {
-        //         return response('Conflict', 409);
-        //     }
-
-        //     $tracker_column = strtolower("can_" . $action);
-
-        //     $spot_is_available = $this->checkAvailableSpot($tracker, $aircraft);
-
-        //     ///
-        //     if ($state == "APPROACH" && !$spot_is_available) {
-        //         return response('Conflict', 409);
-        //     }
-
-        //     if ($tracker->$tracker_column && $tracker->runway_available) {
-
-        //         $aircraft->action = $action;
-        //         $aircraft->state = null;
-        //         $aircraft->save();
-        //         $tracker->$tracker_column = false;
-        //         $tracker->runway_available = false;
-
-        //         $tracker->save();
-
-        //         return response('OK', 204);
-        //     } else {
-
-        //         return response('Conflict', 409);
-        //     }
-
-        // } else if (array_key_exists($state, $allowable_states)) { //LANDED, AIRBORNE, PARKED
-        //     //it's a state
-        //     // if ($aircraft->action == $allowable_states[$state]) {
-        //     //     return response('Conflict', 409);
-        //     // }
-
-        //     if($state=="PARKED"){
-        //         return response('Conflict', 409);
-        //     }
-
-        //     $tracker_column = "can_" . $aircraft->action;
-        //     $aircraft->action = null;
-        //     $aircraft->state = $state;
-        //     $aircraft->save();
-
-        //     $tracker->$tracker_column = true;
-
-        //     $tracker->$tracker_column = false;
-
-        //     if ($state == "PARKED") {
-        //         if ($aircraft->type == "PRIVATE") {
-        //             $tracker->small_spots_occupied += 1;
-        //         } else {
-        //             $tracker->large_spots_occupied += 1;
-        //         }
-        //     }
-
-        //     if ($state != "LANDED") {
-        //         $tracker->runway_available = true;
-        //     }
-
-        //     $tracker->save();
-        //     return response('No Content', 204);
-
-        // } else {
-        //     return response('Bad Request', 409);
-        // }
-
     }
 
-    // public function setState2(Request $request)
-    // {
+    private function logAircraftRequest(){
 
-    //     $allowable_actions = config('constants.allowable_actions'); //Array of correct verbs
-    //     $allowable_states = config('constants.allowable_states');
-    //     $state_actions = config('constants.state_actions');
-    //     $state = $request->state; // get state value
-    //     $callsign = $request->callsign;
-
-    //     //get aircraft and tracker
-    //     $tracker = Tracker::firstOrFail();
-    //     $aircraft = Aircraft::where('callsign', '=', $callsign)->firstOrFail();
-
-    //     //check request is an action or a state
-    //     if (array_key_exists($state, $allowable_actions)) {
-    //         //it's an action
-
-    //         $action = $state; // assign state as action
-    //         //check if aircraft is already in required state
-    //         if ($aircraft->state == $allowable_actions[$action]) {
-    //             return response('Conflict', 409);
-    //         }
-
-    //         $tracker_column = strtolower("can_" . $action);
-
-    //         $spot_is_available = $this->checkAvailableSpot($tracker, $aircraft);
-
-    //         ///
-    //         if ($state == "APPROACH" && !$spot_is_available) {
-    //             return response('Conflict', 409);
-    //         }
-
-    //         if ($tracker->$tracker_column && $tracker->runway_available) {
-
-    //             $aircraft->action = $action;
-    //             $aircraft->state = null;
-    //             $aircraft->save();
-    //             $tracker->$tracker_column = false;
-    //             $tracker->runway_available = false;
-
-    //             $tracker->save();
-
-    //             return response('OK', 204);
-    //         } else {
-
-    //             return response('Conflict', 409);
-    //         }
-
-    //     } else if (array_key_exists($state, $allowable_states)) { //LANDED, AIRBORNE, PARKED
-    //         //it's a state
-    //         // if ($aircraft->action == $allowable_states[$state]) {
-    //         //     return response('Conflict', 409);
-    //         // }
-
-    //         if ($state == "PARKED") {
-    //             return response('Conflict', 409);
-    //         }
-
-    //         $tracker_column = "can_" . $aircraft->action;
-    //         $aircraft->action = null;
-    //         $aircraft->state = $state;
-    //         $aircraft->save();
-
-    //         $tracker->$tracker_column = true;
-
-    //         $tracker->$tracker_column = false;
-
-    //         if ($state == "PARKED") {
-    //             if ($aircraft->type == "PRIVATE") {
-    //                 $tracker->small_spots_occupied += 1;
-    //             } else {
-    //                 $tracker->large_spots_occupied += 1;
-    //             }
-    //         }
-
-    //         if ($state != "LANDED") {
-    //             $tracker->runway_available = true;
-    //         }
-
-    //         $tracker->save();
-    //         return response('No Content', 204);
-
-    //     } else {
-    //         return response('Bad Request', 409);
-    //     }
-
-    // }
-
+    }
     private function checkAvailableSpot(Tracker $tracker, Aircraft $aircraft): bool
     {
         $is_available = false;
