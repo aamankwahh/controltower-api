@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Aircraft;
+use App\Models\RequestLog;
 use App\Models\Tracker;
+use App\Models\ParkingSpot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -83,22 +85,29 @@ class AircraftController extends Controller
 
     public function setState(Request $request)
     {
+        $request_type = "STATE_CHANGE";
 
         $allowable_actions = config('constants.allowable_actions'); //Array of correct verbs
-
         $state = $request->state; // get state value
         $callsign = $request->callsign;
         $aircraft = Aircraft::where('callsign', '=', $callsign)->firstOrFail();
 
         $tracker = Tracker::firstOrFail();
 
+        //Check action is allowed based on previous state
         if ($this->actionIsNotAllowed($state, $aircraft, $allowable_actions)) {
+
+            $request_status = 0;
+            $this->logAircraftRequest($aircraft, $request_type, $request_status);
             return response('Conflict', 409);
+
         }
 
         $spot_is_available = $this->checkAvailableSpot($tracker, $aircraft);
 
         if ($state == "APPROACH" && !$spot_is_available) {
+            $request_status = 0;
+            $this->logAircraftRequest($aircraft, $request_type, $request_status);
             return response('Conflict', 409);
         }
 
@@ -119,8 +128,26 @@ class AircraftController extends Controller
 
                 $tracker->save();
 
+                $request_status = 1;
+                $this->logAircraftRequest($aircraft, $request_type, $request_status);
+
+                if ($state == "TAKEOFF") {
+                    if ($aircraft->type == "PRIVATE") {
+                        $tracker->small_spots_occupied -= 1;
+                    } else {
+                        $tracker->large_spots_occupied -= 1;
+                    }
+    
+                    $spot = ParkingSpot::where('aircraft_id',$aircraft->id)->first();
+    
+                    $spot->aircraft_id=null;
+                    $spot->save();
+                }
+
                 return response('No Content', 204);
             } else {
+                $request_status=0;
+            $this->logAircraftRequest($aircraft,$request_type,$request_status);
                 return response('Conflict', 409);
             }
 
@@ -151,13 +178,7 @@ class AircraftController extends Controller
                 }
             }
 
-            if ($state == "TAKEOFF") {
-                if ($aircraft->type == "PRIVATE") {
-                    $tracker->small_spots_occupied -= 1;
-                } else {
-                    $tracker->large_spots_occupied -= 1;
-                }
-            }
+           
 
             // Landed means aircraft is using the runway
             if ($state != "LANDED") {
@@ -165,14 +186,35 @@ class AircraftController extends Controller
             }
 
             $tracker->save();
+
+            $request_status=0;
+            $this->logAircraftRequest($aircraft,$request_type,$request_status);
+
             return response('No Content', 204);
 
         }
 
     }
 
-    private function logAircraftRequest(){
+    private function returnStatusConflict($aircraft, $request_type)
+    {
+        $request_status = 0;
+        $this->logAircraftRequest($aircraft, $request_type, $request_status);
+        return response('Conflict', 409);
+    }
 
+    private function logAircraftRequest($aircraft, $request_type, $status)
+    {
+        try {
+            $log = new RequestLog();
+            $log->aircraft_id = $aircraft->id;
+            $log->request_type = $request_type;
+            $log->status = $status;
+            $log->save();
+        } catch (\Throwable$th) {
+            //throw $th;
+
+        }
     }
     private function checkAvailableSpot(Tracker $tracker, Aircraft $aircraft): bool
     {
