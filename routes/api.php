@@ -7,6 +7,7 @@ use App\Http\Controllers\AircraftController;
 use App\Http\Controllers\TrafficLogController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\WeatherController;
+use App\Http\Middleware\CheckAuthIdentity;
 
 
 /*
@@ -20,10 +21,8 @@ use App\Http\Controllers\WeatherController;
 |
 */
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
 
+//Admin UI Routes
 Route::middleware(['auth:api'])->group(function () {
     Route::get('account/currentuserdata', [AccountController::class, 'currentuserdata']);
     /* routes for Aircraft Controller  */	
@@ -45,16 +44,22 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::any('traffic/delete/{rec_id}', [TrafficLogController::class,'delete']);
 });
 
-//Route::put('{callsign}/location', [AuthController::class, 'register']);
 
-Route::get('aircraft/generate', [AircraftController::class, 'generateKey']);
-Route::post('{callsign}/intent', [AircraftController::class, 'setState']);
 
-Route::put('{callsign}/location', [AircraftController::class, 'updateLocation']);
+//Private Routes
+Route::middleware(['myauth'])->group(function () {
 
+	Route::post('{callsign}/intent', [AircraftController::class, 'setState']);
+	Route::put('{callsign}/location', [AircraftController::class, 'updateLocation']);
+});
+
+//Public Routes
 Route::get('public/{callsign}/weather', [WeatherController::class, 'getWeatherInfo']);
 
 
+/** 
+ * Account Routes
+ */
 Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('auth/login', [AuthController::class, 'login']);
 Route::post('auth/logout', [AuthController::class, 'logout']);
