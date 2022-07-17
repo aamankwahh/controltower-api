@@ -7,7 +7,7 @@ use App\Http\Controllers\AircraftController;
 use App\Http\Controllers\TrafficLogController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\WeatherController;
-use App\Http\Middleware\CheckAuthIdentity;
+// use App\Http\Middleware\CheckAuthIdentity;
 
 
 /*

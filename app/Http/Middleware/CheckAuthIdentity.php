@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 class CheckAuthIdentity
 {
     /**
+     * Custom auth for my api
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
