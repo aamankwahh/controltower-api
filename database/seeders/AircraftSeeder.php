@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Aircraft;
 use App\Models\Tracker;
+use App\Models\ParkingSpot;
 
 class AircraftSeeder extends Seeder
 {
@@ -26,6 +27,11 @@ class AircraftSeeder extends Seeder
             $craft->state="PARKED";
             $craft->save();
 
+            $spot = ParkingSpot::where('spot_type','LARGE')->where('available',1)->first();
+            $spot->aircraft_id=$craft->id;
+            $spot->available=false;
+            $spot->save();
+
             $tracker->large_spots_occupied+=1;
             $tracker->save();
         }
@@ -39,12 +45,17 @@ class AircraftSeeder extends Seeder
             $craft->state="PARKED";
             $craft->save();
 
+            $spot = ParkingSpot::where('spot_type','SMALL')->where('available',1)->first();
+            $spot->aircraft_id=$craft->id;
+            $spot->available=false;
+            $spot->save();
+
             $tracker->small_spots_occupied+=1;
             $tracker->save();
         }
 
 
-         //SMALL planes
+         
          for ($i=104; $i <107 ; $i++) { 
             # code...
             $craft = new Aircraft();

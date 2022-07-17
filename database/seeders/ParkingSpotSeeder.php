@@ -16,20 +16,20 @@ class ParkingSpotSeeder extends Seeder
     public function run()
     {
         //
-        for ($i=400; $i<406 ; $i++) { 
-            # code...
-            $spot = new ParkingSpot();
-            $spot->spot_name ="SPOT".$i;
-            $spot->spot_type="SMALL";
-            $spot->available=1;
-            $spot->save();
-        }
-
-        for ($i=300; $i<311 ; $i++) { 
+        for ($i=400; $i<405 ; $i++) { 
             # code...
             $spot = new ParkingSpot();
             $spot->spot_name ="SPOT".$i;
             $spot->spot_type="LARGE";
+            $spot->available=1;
+            $spot->save();
+        }
+
+        for ($i=300; $i<310 ; $i++) { 
+            # code...
+            $spot = new ParkingSpot();
+            $spot->spot_name ="SPOT".$i;
+            $spot->spot_type="SMALL";
             $spot->available=1;
             $spot->save();
         }
