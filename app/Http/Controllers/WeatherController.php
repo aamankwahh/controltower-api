@@ -3,83 +3,49 @@
 namespace App\Http\Controllers;
 
 use App\Models\Weather;
+use App\Models\RequestLog;
+use App\Models\Aircraft;
 use Illuminate\Http\Request;
 
 class WeatherController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
+    public function getWeatherInfo(Request $request){
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
+        $callsign = $request->callsign;
+        $aircraft = Aircraft::where('callsign',$callsign)->first();
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        $request_log = new RequestLog();
+        $request_log->request_type="WEATHER_INFO";
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Weather  $weather
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Weather $weather)
-    {
-        //
-    }
+        if($aircraft){
+            $request_log->aircraft_id=$aircraft->id;
+        }else{
+            return response('Not valid',500);
+        }
+        
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Weather  $weather
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Weather $weather)
-    {
-        //
-    }
+        try {
+            
+            $weather_record=Weather::latest()->first();
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Weather  $weather
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Weather $weather)
-    {
-        //
-    }
+            if($weather_record){
+                $weather_info = json_decode($weather_record->response);
+                $request_log->status=1;
+                $request_log->save();
+                return response()->json($weather_info);
+            }else{
+                $request_log->status=0;
+                $request_log->save();
+                return response()->json(["message"=>"No records available"]);
+            }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Weather  $weather
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Weather $weather)
-    {
-        //
+           
+        } catch (\Throwable $th) {
+            throw $th;
+            //return response('Error',500);
+        }
+
+       
+
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AircraftController;
 use App\Http\Controllers\TrafficLogController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\WeatherController;
 
 
 /*
@@ -48,6 +49,11 @@ Route::middleware(['auth:api'])->group(function () {
 
 Route::get('aircraft/generate', [AircraftController::class, 'generateKey']);
 Route::post('{callsign}/intent', [AircraftController::class, 'setState']);
+
+Route::put('{callsign}/location', [AircraftController::class, 'updateLocation']);
+
+Route::get('public/{callsign}/weather', [WeatherController::class, 'getWeatherInfo']);
+
 
 Route::post('auth/register', [AuthController::class, 'register']);
 Route::post('auth/login', [AuthController::class, 'login']);
