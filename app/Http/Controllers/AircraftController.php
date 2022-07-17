@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Aircraft;
+use App\Models\ParkingSpot;
 use App\Models\RequestLog;
 use App\Models\Tracker;
-use App\Models\ParkingSpot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -97,19 +97,115 @@ class AircraftController extends Controller
         //Check action is allowed based on previous state
         if ($this->actionIsNotAllowed($state, $aircraft, $allowable_actions)) {
 
+            $request_status = 0; // rejected
+            $this->logAircraftRequest($aircraft, $request_type, $request_status);
+            return response('Action not allowed', 409);
+
+        }
+
+        //TAKE OFF
+        if (($state == "TAKEOFF" || $state == "LANDED") && $tracker->runway_available == false) {
+            $request_status = 0; // rejected
+            $this->logAircraftRequest($aircraft, $request_type, $request_status);
+            return response('Runway not available', 409);
+        }
+
+        $tracker_column = strtolower("can_" . $state);
+
+        // IF field is in tracker column
+        if (Schema::hasColumn('trackers', $tracker_column)) {
+
+            if ($tracker->runway_available == false) {
+                return response('Runway not available2', 409);
+            }
+            $is_allowed = $tracker->$tracker_column;
+            $previous_aircraft_state = strtolower($aircraft->state);
+
+            if (!$is_allowed) {
+
+                return response('Cannot perform action', 409);
+
+            } else {
+                Log::info("state " . $state);
+                $table_column = "can_" . $previous_aircraft_state;
+                if (Schema::hasColumn('trackers', $table_column)) {
+
+                    $tracker->$table_column = true;
+                }
+                $aircraft->state = $state;
+                $tracker->$tracker_column = false;
+
+                if ($state != "APPROACH") {
+                    $tracker->runway_available = false;
+                }
+
+                $aircraft->save();
+                $tracker->save();
+
+                return response('Accepted', 204);
+            }
+
+        } else { //field not in schema
+
+            $tracker_column = strtolower("can_" . strtolower($aircraft->state));
+
+            //return response($tracker->$tracker_column,200);
+            if (Schema::hasColumn('trackers', $tracker_column)); //check whether  table has column
+            {
+                if ($tracker->$tracker_column == 0) {
+
+                    $tracker->$tracker_column = true;
+
+                }
+
+            }
+
+           
+            if($state=="AIRBORNE"){
+                $tracker->runway_available=true;
+            }
+
+            $aircraft->state = $state;
+            $aircraft->save();
+            $tracker->save();
+
+            $request_status = 1; //accepted
+            $this->logAircraftRequest($aircraft, $request_type, $request_status);
+            return response('Accepted', 204);
+
+        }
+
+    }
+
+    public function setState3(Request $request)
+    {
+        $request_type = "STATE_CHANGE";
+
+        $allowable_actions = config('constants.allowable_actions'); //Array of correct verbs
+        $state = $request->state; // get state value
+        $callsign = $request->callsign;
+        $aircraft = Aircraft::where('callsign', '=', $callsign)->firstOrFail();
+
+        $tracker = Tracker::firstOrFail();
+
+        //Check action is allowed based on previous state
+        if ($this->actionIsNotAllowed($state, $aircraft, $allowable_actions)) {
+
             $request_status = 0;
             $this->logAircraftRequest($aircraft, $request_type, $request_status);
             return response('Conflict', 409);
 
         }
 
+        //Check if spot is available
         $spot_is_available = $this->checkAvailableSpot($tracker, $aircraft);
 
-        if ($state == "APPROACH" && !$spot_is_available) {
-            $request_status = 0;
-            $this->logAircraftRequest($aircraft, $request_type, $request_status);
-            return response('Conflict', 409);
-        }
+        //
+        // if ($state == "LANDED" && !$spot_is_available) {
+        //     $request_status = 0;
+        //     $this->logAircraftRequest($aircraft, $request_type, $request_status);
+        //     return response('No landing - Spot not available', 409);
+        // }
 
         $tracker_column = strtolower("can_" . $state);
 
@@ -118,40 +214,52 @@ class AircraftController extends Controller
 
             $is_allowed = $tracker->$tracker_column;
 
-            if ($is_allowed && $tracker->runway_available) {
-
-                $aircraft->state = $state;
-                $aircraft->save();
-
-                $tracker->$tracker_column = false;
-                $tracker->runway_available = false;
-
-                $tracker->save();
-
-                $request_status = 1;
-                $this->logAircraftRequest($aircraft, $request_type, $request_status);
+            if ($is_allowed) {
 
                 if ($state == "TAKEOFF") {
+                    if ($tracker->runway_available == false) {
+                        return response('Runway not available', 409);
+                        //log
+                    }
                     if ($aircraft->type == "PRIVATE") {
                         $tracker->small_spots_occupied -= 1;
                     } else {
                         $tracker->large_spots_occupied -= 1;
                     }
-    
-                    $spot = ParkingSpot::where('aircraft_id',$aircraft->id)->first();
-    
-                    $spot->aircraft_id=null;
-                    $spot->save();
-                }
 
+                    $spot = ParkingSpot::where('aircraft_id', $aircraft->id)->first();
+                    $spot->aircraft_id = null;
+                    $spot->available = true;
+                    $spot->save();
+
+                    $tracker->runway_available = false;
+
+                }
+                $tracker->$tracker_column = false;
+
+                // if($state!="APPROACH"){ // Runway is not available for landing and takeoff only
+                //     $tracker->runway_available = false;
+                // }
+
+                $aircraft->state = $state;
+                $aircraft->save();
+
+                $tracker->save();
+                $request_status = 1;
+                $this->logAircraftRequest($aircraft, $request_type, $request_status);
                 return response('No Content', 204);
             } else {
-                $request_status=0;
-            $this->logAircraftRequest($aircraft,$request_type,$request_status);
+                $request_status = 0;
+                $this->logAircraftRequest($aircraft, $request_type, $request_status);
                 return response('Conflict', 409);
             }
 
-        } else {
+        } else { // if column is not in tracker table
+
+            if ($state == "LANDED" && $tracker->runway_available == false) {
+
+                return response('Conflict', 409);
+            }
 
             $tracker_column = strtolower("can_" . $aircraft->state);
 
@@ -162,33 +270,32 @@ class AircraftController extends Controller
                 if ($tracker->$tracker_column == 0) {
 
                     $tracker->$tracker_column = true;
-                    $tracker->save();
+                    //$tracker->runway_available=true;
+                    // $tracker->save();
+
+                    //$aircraft->state = $state;
+                    //$aircraft->save();
+
+                    // $request_status=1;
+                    // $this->logAircraftRequest($aircraft,$request_type,$request_status);
+
+                    // return response('No Content', 204);
 
                 }
             }
 
-            $aircraft->state = $state;
-            $aircraft->save();
+            // // Landed means aircraft is using the runway
+            // if ($state != "LANDED") {
+            //     $tracker->runway_available = true;
+            // }
 
-            if ($state == "PARKED") {
-                if ($aircraft->type == "PRIVATE") {
-                    $tracker->small_spots_occupied += 1;
-                } else {
-                    $tracker->large_spots_occupied += 1;
-                }
-            }
+            //$tracker->save();
 
-           
-
-            // Landed means aircraft is using the runway
-            if ($state != "LANDED") {
-                $tracker->runway_available = true;
-            }
+            // $tracker->runway_available=false;
 
             $tracker->save();
-
-            $request_status=0;
-            $this->logAircraftRequest($aircraft,$request_type,$request_status);
+            $request_status = 1;
+            $this->logAircraftRequest($aircraft, $request_type, $request_status);
 
             return response('No Content', 204);
 

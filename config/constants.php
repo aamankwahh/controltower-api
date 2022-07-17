@@ -4,8 +4,7 @@ return [
    
     'allowable_actions'=>array(
         'TAKEOFF'=>[
-            //'previous_action'=>'CREW',
-            //'next_action'=>'APPROACH',
+           
             'previous_state'=>'PARKED',
             'next_state'=>'AIRBORNE'
         ],

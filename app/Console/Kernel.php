@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('weather:fetch')->everyFiveMinutes();
+        $schedule->command('aircraft:tow')->everyMinute();
         
         
     }
