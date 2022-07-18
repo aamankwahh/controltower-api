@@ -164,7 +164,7 @@ class AircraftController extends Controller
             }
             $status=1;
             $request_type="LOCATION_UPDATE";
-            $this->logAircraftRequest($aircraft,$request_type,$status,"Weather");
+            $this->logAircraftRequest($aircraft,$request_type,$status,"Send Location");
             return response('Success', 204);
             
         } catch (\Throwable$th) {

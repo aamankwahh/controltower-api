@@ -8,6 +8,7 @@ use App\Http\Controllers\TrafficLogController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\WeatherController;
 use App\Http\Controllers\ParkingSpotController;
+use App\Http\Controllers\RequestLogController;
 // use App\Http\Middleware\CheckAuthIdentity;
 
 
@@ -47,6 +48,8 @@ Route::middleware(['auth:api'])->group(function () {
 	//Dashboard Routes
 	Route::get('weather/update', [WeatherController::class,'index']);
 	Route::get('parking/overview', [ParkingSpotController::class,'index']);
+	Route::get('logs/updates', [RequestLogController::class,'getUpdates']);
+	
 });
 
 
