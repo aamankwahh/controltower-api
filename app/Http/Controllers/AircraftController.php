@@ -158,13 +158,23 @@ class AircraftController extends Controller
             return response('Runway not available', 409);
         }
 
+        $spot_is_available = $this->checkAvailableSpot($tracker, $aircraft);
+        Log::info($spot_is_available);
+
+        //
+        if($state=="APPROACH"  && !$spot_is_available){
+            $request_status = 0; // rejected
+            $this->logAircraftRequest($aircraft, $request_type, $request_status);
+            return response('No spot available', 409);
+        }
+
         $tracker_column = strtolower("can_" . $state);
 
         // IF field is in tracker column
         if (Schema::hasColumn('trackers', $tracker_column)) {
 
             if ($tracker->runway_available == false) {
-                return response('Runway not available2', 409);
+                return response('Runway not available', 409);
             }
             $is_allowed = $tracker->$tracker_column;
             $previous_aircraft_state = strtolower($aircraft->state);
@@ -174,7 +184,7 @@ class AircraftController extends Controller
                 return response('Cannot perform action', 409);
 
             } else {
-                Log::info("state " . $state);
+                //Log::info("state " . $state);
                 $table_column = "can_" . $previous_aircraft_state;
                 if (Schema::hasColumn('trackers', $table_column)) {
 
@@ -187,6 +197,7 @@ class AircraftController extends Controller
                     $tracker->runway_available = false;
                 }
 
+
                 $aircraft->save();
                 $tracker->save();
 
@@ -195,7 +206,8 @@ class AircraftController extends Controller
 
         } else { //field not in schema
 
-            $tracker_column = strtolower("can_" . strtolower($aircraft->state));
+            $previous_aircraft_state = $aircraft->state;
+            $tracker_column = strtolower("can_" . strtolower($previous_aircraft_state));
 
             //return response($tracker->$tracker_column,200);
             if (Schema::hasColumn('trackers', $tracker_column)); //check whether  table has column
@@ -208,8 +220,19 @@ class AircraftController extends Controller
 
             }
 
-            if ($state == "AIRBORNE") {
+            if ($state == "AIRBORNE" && $previous_aircraft_state=="TAKEOFF") {
                 $tracker->runway_available = true;
+
+                $spot = ParkingSpot::where('aircraft_id', $aircraft->id)->first();
+                $spot->aircraft_id = null;
+                $spot->available = true;
+                $spot->save();
+
+                if ($aircraft->type == "PRIVATE") {
+                    $tracker->small_spots_occupied -= 1;
+                } else {
+                    $tracker->large_spots_occupied -= 1;
+                }
             }
 
             $aircraft->state = $state;
@@ -374,15 +397,21 @@ class AircraftController extends Controller
     {
         $is_available = false;
 
+        // Log::info("aircraft_type. ".$aircraft->type)
+
         if ($aircraft->type == 'PRIVATE') {
             //check if spots occupied is less than total allowed
-            if ($tracker->small_spots_occupied < $tracker->total_small_spots) {
+           
+            
+            $spot = ParkingSpot::where('spot_type','SMALL')->where('available',1)->first();
+            
+            if ($spot) {
                 $is_available = true;
             }
 
         } else {
-
-            if ($tracker->large_spots_occupied < $tracker->total_large_spots) {
+            $spot = ParkingSpot::where('spot_type','LARGE')->where('available',1)->first();
+            if ($spot) {
                 $is_available = true;
             }
         }

@@ -47,23 +47,18 @@ class TowLandedAircraft extends Command
                 $spot = ParkingSpot::where('spot_type','LARGE')
                 ->where('available',true)
                 ->first();
-                Log::info($spot);
+               
                // $tracker->large_spots_occupied -= 1;
     
             }
 
         $spot->aircraft_id=$aircraft->id;
         $spot->available=false;
-
         $tracker->runway_available=true;
-        
+        $tracker->can_landed=true;
         $spot->save();
-
         $tracker->save();
-
         $aircraft->state="PARKED";
-
-       
         $aircraft->save();
         }
        
