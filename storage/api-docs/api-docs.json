@@ -8,13 +8,13 @@
         "/{callsign}/intent": {
             "get": {
                 "tags": [
-                    "callsign"
+                    "Request State Change"
                 ],
-                "summary": "Returns pet inventories by status",
-                "description": "Returns a map of status codes to quantities",
-                "operationId": "getInventory",
+                "summary": "Changes the state of an aircraft ",
+                "description": "Returns http status code",
+                "operationId": "setState",
                 "responses": {
-                    "200": {
+                    "204": {
                         "description": "successful operation",
                         "content": {
                             "application/json": {

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 use Spatie\Crypto\Rsa\KeyPair;
 use Spatie\Crypto\Rsa\PrivateKey;
@@ -45,7 +46,18 @@ class AircraftController extends Controller
 
     public function updateLocation(Request $request)
     {
-        
+        $validator = Validator::make($request->all(), [
+            'longitude' => 'required',
+            'latitude' => 'required',
+            'altitude' => 'required',
+            'heading' => 'required',
+            'type'=>'required'
+           
+        ]);
+        if ($validator->fails())
+        {
+            return response(['errors'=>$validator->errors()->all()], 422);
+        }
         try {
             //code...
             $callsign = $request->callsign;
@@ -79,7 +91,7 @@ class AircraftController extends Controller
             }
             $status=1;
             $request_type="LOCATION_UPDATE";
-            $this->logAircraftRequest($aircraft,$request_type,$status);
+            $this->logAircraftRequest($aircraft,$request_type,$status,"Weather");
             return response('Success', 204);
             
         } catch (\Throwable$th) {
@@ -115,6 +127,14 @@ class AircraftController extends Controller
 
     public function setState(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'state' => 'required',
+        ]);
+        if ($validator->fails())
+        {
+            return response(['errors'=>$validator->errors()->all()], 422);
+        }
+
         $request_type = "STATE_CHANGE";
 
         $allowable_actions = config('constants.allowable_actions'); //Array of correct verbs
@@ -128,7 +148,7 @@ class AircraftController extends Controller
         if ($this->actionIsNotAllowed($state, $aircraft, $allowable_actions)) {
 
             $request_status = 0; // rejected
-            $this->logAircraftRequest($aircraft, $request_type, $request_status);
+            $this->logAircraftRequest($aircraft, $request_type, $request_status,$state);
             return response('Action not allowed', 409);
 
         }
@@ -136,7 +156,7 @@ class AircraftController extends Controller
         //TAKE OFF
         if (($state == "TAKEOFF" || $state == "LANDED") && $tracker->runway_available == false) {
             $request_status = 0; // rejected
-            $this->logAircraftRequest($aircraft, $request_type, $request_status);
+            $this->logAircraftRequest($aircraft, $request_type, $request_status,$state);
             return response('Runway not available', 409);
         }
 
@@ -146,7 +166,7 @@ class AircraftController extends Controller
         //
         if($state=="APPROACH"  && !$spot_is_available){
             $request_status = 0; // rejected
-            $this->logAircraftRequest($aircraft, $request_type, $request_status);
+            $this->logAircraftRequest($aircraft, $request_type, $request_status,$state);
             return response('No spot available', 409);
         }
 
@@ -157,7 +177,7 @@ class AircraftController extends Controller
 
             if ($tracker->runway_available == false) {
                 $request_status = 0; // rejected
-                $this->logAircraftRequest($aircraft, $request_type, $request_status);
+                $this->logAircraftRequest($aircraft, $request_type, $request_status,$state);
                 return response('Runway not available', 409);
             }
             $is_allowed = $tracker->$tracker_column;
@@ -166,7 +186,7 @@ class AircraftController extends Controller
             if (!$is_allowed) {
 
                 $request_status = 0; // rejected
-                $this->logAircraftRequest($aircraft, $request_type, $request_status);
+                $this->logAircraftRequest($aircraft, $request_type, $request_status,$state);
                 return response('Cannot perform action', 409);
 
             } else {
@@ -187,7 +207,7 @@ class AircraftController extends Controller
                 $aircraft->save();
                 $tracker->save();
                 $request_status = 1; // accepted
-                $this->logAircraftRequest($aircraft, $request_type, $request_status);
+                $this->logAircraftRequest($aircraft, $request_type, $request_status,$state);
                 return response('Accepted', 204);
             }
 
@@ -227,7 +247,7 @@ class AircraftController extends Controller
             $tracker->save();
 
             $request_status = 1; //accepted
-            $this->logAircraftRequest($aircraft, $request_type, $request_status);
+            $this->logAircraftRequest($aircraft, $request_type, $request_status,$state);
             return response('Accepted', 204);
 
         }
@@ -235,21 +255,14 @@ class AircraftController extends Controller
     }
 
    
-
-    private function returnStatusConflict($aircraft, $request_type)
-    {
-        $request_status = 0;
-        $this->logAircraftRequest($aircraft, $request_type, $request_status);
-        return response('Conflict', 409);
-    }
-
-    private function logAircraftRequest($aircraft, $request_type, $status)
+    private function logAircraftRequest($aircraft, $request_type, $status,$action=null)
     {
         try {
             $log = new RequestLog();
             $log->aircraft_id = $aircraft->id;
             $log->request_type = $request_type;
             $log->status = $status;
+            $log->action=$action;
             $log->save();
         } catch (\Throwable$th) {
             //throw $th;

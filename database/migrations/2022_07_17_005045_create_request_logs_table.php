@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('request_logs', function (Blueprint $table) {
             $table->id();
             $table->enum('request_type',['STATE_CHANGE','LOCATION_UPDATE','WEATHER_INFO']);
+            $table->string('action')->nullable;
             $table->tinyInteger('status');
             $table->bigInteger('aircraft_id')->unsigned();
             $table->foreign('aircraft_id')->references('id')->on('aircraft');
