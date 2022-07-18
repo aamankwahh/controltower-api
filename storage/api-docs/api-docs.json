@@ -5,6 +5,85 @@
         "version": "0.1"
     },
     "paths": {
+        "/api/{callsign}/location": {
+            "put": {
+                "tags": [
+                    "Aircraft Location Update"
+                ],
+                "summary": "Aircraft state change request",
+                "operationId": "1e3e7d639f6ea60d231b47f24d2e3635",
+                "parameters": [
+                    {
+                        "name": "callsign",
+                        "in": "path",
+                        "description": "Aircraft's updates location",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "examples": {
+                            "string": {
+                                "summary": "Airliner - Current State: Airborne",
+                                "value": "AR104"
+                            }
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "latitude": {
+                                        "type": "number",
+                                        "format": "double"
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "format": "double"
+                                    },
+                                    "altitude": {
+                                        "type": "integer"
+                                    },
+                                    "heading": {
+                                        "type": "integer"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "token": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "latitude": "111.87654",
+                                    "longitude": "-23.7654",
+                                    "altitude": "3000",
+                                    "heading": "120",
+                                    "type": "AIRLINER",
+                                    "token": "1a1f91e2241e9056cf2dd4f9cf66e8da"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "409": {
+                        "description": "Conflict"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
         "/api/{callsign}/intent": {
             "post": {
                 "tags": [
@@ -53,6 +132,49 @@
                 "responses": {
                     "204": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "409": {
+                        "description": "Conflict"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/public/{callsign}/weather": {
+            "get": {
+                "tags": [
+                    "Request Weather Update"
+                ],
+                "summary": "Requests weather update from Control Tower",
+                "operationId": "b77a3d9f6ffccfbeaf861b32242f5bb4",
+                "parameters": [
+                    {
+                        "name": "callsign",
+                        "in": "path",
+                        "description": "Aircraft's call sign",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "examples": {
+                            "string": {
+                                "summary": "Airliner - Current State: PARKED",
+                                "value": "AR101"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
                     }
                 }
             }

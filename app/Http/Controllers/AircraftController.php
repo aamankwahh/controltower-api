@@ -44,6 +44,79 @@ class AircraftController extends Controller
         return $this->respond($records);
     }
 
+
+    //--------SWAGGER DOCUMENTATION START-------------------
+   /**
+ * @OA\Put(
+ *     path="/api/{callsign}/location",
+ *      tags={"Aircraft Location Update"},
+ *     summary="Aircraft state change request",
+ *     @OA\Parameter(
+ *         description="Aircraft's updates location",
+ *         in="path",
+ *         name="callsign",
+ *         required=true,
+ *         @OA\Schema(type="string"),
+ *         @OA\Examples(example="string", value="AR104", summary="Airliner - Current State: Airborne"),
+ * 
+ *         
+ * 
+ *     ),
+ * @OA\RequestBody(
+ *         @OA\MediaType(
+ *             mediaType="application/json",
+ *             @OA\Schema(
+ *                 @OA\Property(
+ *                     property="latitude",
+ *                     type="double"
+ *                 ),
+ *                  @OA\Property(
+ *                     property="longitude",
+ *                     type="double"
+ *                 ),
+ *                  @OA\Property(
+ *                     property="altitude",
+ *                     type="integer"
+ *                 ),
+ *                  @OA\Property(
+ *                     property="heading",
+ *                     type="integer"
+ *                 ),
+ *                   @OA\Property(
+ *                     property="type",
+ *                     type="string"
+ *                 ),
+ *                  @OA\Property(
+ *                     property="token",
+ *                     type="string"
+ *                 ),
+ *                
+ *                
+ *                 example={"latitude": "111.87654","longitude": "-23.7654","altitude": "3000","heading": "120","type": "AIRLINER","token":"1a1f91e2241e9056cf2dd4f9cf66e8da"}
+ *             )
+ *         )
+ *     ),
+ *  
+ *     @OA\Response(
+ *         response=204,
+ *         description="OK"
+ *     ),
+ *  @OA\Response(
+ *         response=400,
+ *         description="Bad Request"
+ *     ),
+ *  @OA\Response(
+ *         response=409,
+ *         description="Conflict"
+ *     ),
+ *  @OA\Response(
+ *         response=401,
+ *         description="Unauthorized"
+ *     ),
+ * )
+ */
+//--------SWAGGER DOCUMENTATION END-------------------
+
     public function updateLocation(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -101,7 +174,7 @@ class AircraftController extends Controller
 
     }
 
-
+//--------SWAGGER DOCUMENTATION START-------------------
    /**
  * @OA\Post(
  *     path="/api/{callsign}/intent",
@@ -140,9 +213,22 @@ class AircraftController extends Controller
  *     @OA\Response(
  *         response=204,
  *         description="OK"
- *     )
+ *     ),
+ *  @OA\Response(
+ *         response=400,
+ *         description="Bad Request"
+ *     ),
+ *  @OA\Response(
+ *         response=409,
+ *         description="Conflict"
+ *     ),
+ *  @OA\Response(
+ *         response=401,
+ *         description="Unauthorized"
+ *     ),
  * )
  */
+//--------SWAGGER DOCUMENTATION END-------------------
     public function setState(Request $request)
     {
         $validator = Validator::make($request->all(), [
