@@ -110,7 +110,6 @@ class WeatherController extends Controller
         if($weather_record){
             $weather_info = json_decode($weather_record->response,true);
 
-
             $description=$weather_info['weather'][0]['description'];
             $temp=$weather_info['main']['temp'];
 
