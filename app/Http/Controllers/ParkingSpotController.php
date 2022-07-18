@@ -8,7 +8,10 @@ use App\Models\ParkingSpot;
 class ParkingSpotController extends Controller
 {
     //
+
+
     public function index(){
+
         $spots = ParkingSpot::select('spot_name','spot_type','callsign','available')
         ->leftJoin('aircraft','parking_spots.aircraft_id','=','aircraft.id')
         ->get();
