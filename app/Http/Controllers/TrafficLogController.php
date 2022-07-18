@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TrafficLog;
+use App\Models\RequestLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -17,20 +18,20 @@ class TrafficLogController extends Controller
      * @return \Illuminate\View\View
      */
 	function index(Request $request, $fieldname = null , $fieldvalue = null){
-		$query = TrafficLog::query();
-        $query->join("aircraft", "traffic_logs.aircraft_id", "=", "aircraft.id");
+		$query = RequestLog::query();
+        $query->join("aircraft", "request_logs.aircraft_id", "=", "aircraft.id");
 		if($request->search){
 			$search = trim($request->search);
 			TrafficLog::search($query, $search);
 		}
-		$orderby = $request->orderby ?? "traffic_logs.id";
+		$orderby = $request->orderby ?? "request_logs.id";
 		$ordertype = $request->ordertype ?? "desc";
 		$query->orderBy($orderby, $ordertype);
 		if($fieldname){
 			$query->where($fieldname , $fieldvalue); //filter by a single field name
 		}
-		$records = $this->paginate($query, TrafficLog::listFields());
-        Log::info($records);
+		$records = $this->paginate($query, RequestLog::listFields());
+        // Log::info($records);
 		return $this->respond($records);
 	}
 
