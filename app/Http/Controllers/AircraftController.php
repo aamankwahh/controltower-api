@@ -89,24 +89,6 @@ class AircraftController extends Controller
 
     }
 
-    public function generateKey()
-    {
-
-        
-
-
-    //    $test= Spatie\Crypto\Rsa\PrivateKey::fromString($privateKeyString);
-
-       // generating an RSA key pair
-        [$privateKey, $publicKey] = (new KeyPair())->generate();
-       //$test2 Spatie\Crypto\Rsa\PublicKey::fromString($publicKeyString);
-
-        // $key1 = openssl_get_publickey($key);
-        // open_ssl_ge
-
-        return response()->json(["public" => $publicKey]);
-
-    }
 
     /**
      * @OA\Get(
@@ -247,131 +229,7 @@ class AircraftController extends Controller
 
     }
 
-    public function setState3(Request $request)
-    {
-        $request_type = "STATE_CHANGE";
-
-        $allowable_actions = config('constants.allowable_actions'); //Array of correct verbs
-        $state = $request->state; // get state value
-        $callsign = $request->callsign;
-        $aircraft = Aircraft::where('callsign', '=', $callsign)->firstOrFail();
-
-        $tracker = Tracker::firstOrFail();
-
-        //Check action is allowed based on previous state
-        if ($this->actionIsNotAllowed($state, $aircraft, $allowable_actions)) {
-
-            $request_status = 0;
-            $this->logAircraftRequest($aircraft, $request_type, $request_status);
-            return response('Conflict', 409);
-
-        }
-
-        //Check if spot is available
-        $spot_is_available = $this->checkAvailableSpot($tracker, $aircraft);
-
-        //
-        // if ($state == "LANDED" && !$spot_is_available) {
-        //     $request_status = 0;
-        //     $this->logAircraftRequest($aircraft, $request_type, $request_status);
-        //     return response('No landing - Spot not available', 409);
-        // }
-
-        $tracker_column = strtolower("can_" . $state);
-
-        //
-        if (Schema::hasColumn('trackers', $tracker_column)) {
-
-            $is_allowed = $tracker->$tracker_column;
-
-            if ($is_allowed) {
-
-                if ($state == "TAKEOFF") {
-                    if ($tracker->runway_available == false) {
-                        return response('Runway not available', 409);
-                        //log
-                    }
-                    if ($aircraft->type == "PRIVATE") {
-                        $tracker->small_spots_occupied -= 1;
-                    } else {
-                        $tracker->large_spots_occupied -= 1;
-                    }
-
-                    $spot = ParkingSpot::where('aircraft_id', $aircraft->id)->first();
-                    $spot->aircraft_id = null;
-                    $spot->available = true;
-                    $spot->save();
-
-                    $tracker->runway_available = false;
-
-                }
-                $tracker->$tracker_column = false;
-
-                // if($state!="APPROACH"){ // Runway is not available for landing and takeoff only
-                //     $tracker->runway_available = false;
-                // }
-
-                $aircraft->state = $state;
-                $aircraft->save();
-
-                $tracker->save();
-                $request_status = 1;
-                $this->logAircraftRequest($aircraft, $request_type, $request_status);
-                return response('No Content', 204);
-            } else {
-                $request_status = 0;
-                $this->logAircraftRequest($aircraft, $request_type, $request_status);
-                return response('Conflict', 409);
-            }
-
-        } else { // if column is not in tracker table
-
-            if ($state == "LANDED" && $tracker->runway_available == false) {
-
-                return response('Conflict', 409);
-            }
-
-            $tracker_column = strtolower("can_" . $aircraft->state);
-
-            //return response($tracker->$tracker_column,200);
-            if (Schema::hasColumn('trackers', $tracker_column)); //check whether  table has column
-            {
-
-                if ($tracker->$tracker_column == 0) {
-
-                    $tracker->$tracker_column = true;
-                    //$tracker->runway_available=true;
-                    // $tracker->save();
-
-                    //$aircraft->state = $state;
-                    //$aircraft->save();
-
-                    // $request_status=1;
-                    // $this->logAircraftRequest($aircraft,$request_type,$request_status);
-
-                    // return response('No Content', 204);
-
-                }
-            }
-
-            // // Landed means aircraft is using the runway
-            // if ($state != "LANDED") {
-            //     $tracker->runway_available = true;
-            // }
-
-            //$tracker->save();
-
-            // $tracker->runway_available=false;
-
-            $tracker->save();
-            $request_status = 1;
-            $this->logAircraftRequest($aircraft, $request_type, $request_status);
-
-            return response('No Content', 204);
-
-        }
-
-    }
+   
 
     private function returnStatusConflict($aircraft, $request_type)
     {
@@ -433,5 +291,19 @@ class AircraftController extends Controller
         }
 
         return $not_allowed;
+    }
+
+    public function generateKey()
+    {
+
+     
+        [$privateKey, $publicKey] = (new KeyPair())->generate();
+       //$test2 Spatie\Crypto\Rsa\PublicKey::fromString($publicKeyString);
+
+        // $key1 = openssl_get_publickey($key);
+        // open_ssl_ge
+
+        return response()->json(["public" => $publicKey]);
+
     }
 }
