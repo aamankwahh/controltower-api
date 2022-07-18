@@ -102,29 +102,47 @@ class AircraftController extends Controller
     }
 
 
-    /**
-     * @OA\Get(
-     *     path="/{callsign}/intent",
-     *     tags={"Request State Change"},
-     *     summary="Changes the state of an aircraft ",
-     *     description="Returns http status code",
-     *     operationId="setState",
-     *     @OA\Response(
-     *         response=204,
-     *         description="successful operation",
-     *         @OA\JsonContent(
-     *             @OA\AdditionalProperties(
-     *                 type="integer",
-     *                 format="int32"
-     *             )
-     *         )
-     *     ),
-     *     security={
-     *         {"api_key": {}}
-     *     }
-     * )
-     */
-
+   /**
+ * @OA\Post(
+ *     path="/api/{callsign}/intent",
+ *      tags={"Request Aircraft State Change"},
+ *     summary="Aircraft state change request",
+ *     @OA\Parameter(
+ *         description="Aircraft's call sign",
+ *         in="path",
+ *         name="callsign",
+ *         required=true,
+ *         @OA\Schema(type="string"),
+ *         @OA\Examples(example="string", value="AR101", summary="Airliner - Current State: PARKED"),
+ * 
+ *         
+ * 
+ *     ),
+ * @OA\RequestBody(
+ *         @OA\MediaType(
+ *             mediaType="application/json",
+ *             @OA\Schema(
+ *                 @OA\Property(
+ *                     property="state",
+ *                     type="string"
+ *                 ),
+ *                  @OA\Property(
+ *                     property="token",
+ *                     type="string"
+ *                 ),
+ *                
+ *                
+ *                 example={"state": "TAKEOFF","token":"1a1f91e2241e9056cf2dd4f9cf66e8da"}
+ *             )
+ *         )
+ *     ),
+ *  
+ *     @OA\Response(
+ *         response=204,
+ *         description="OK"
+ *     )
+ * )
+ */
     public function setState(Request $request)
     {
         $validator = Validator::make($request->all(), [

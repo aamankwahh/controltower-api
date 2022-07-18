@@ -5,34 +5,56 @@
         "version": "0.1"
     },
     "paths": {
-        "/{callsign}/intent": {
-            "get": {
+        "/api/{callsign}/intent": {
+            "post": {
                 "tags": [
-                    "Request State Change"
+                    "Request Aircraft State Change"
                 ],
-                "summary": "Changes the state of an aircraft ",
-                "description": "Returns http status code",
-                "operationId": "setState",
-                "responses": {
-                    "204": {
-                        "description": "successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "additionalProperties": {
-                                        "type": "integer",
-                                        "format": "int32"
+                "summary": "Aircraft state change request",
+                "operationId": "e0da4298ae7969ddf97ab18fb03ef249",
+                "parameters": [
+                    {
+                        "name": "callsign",
+                        "in": "path",
+                        "description": "Aircraft's call sign",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "examples": {
+                            "string": {
+                                "summary": "Airliner - Current State: PARKED",
+                                "value": "AR101"
+                            }
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "state": {
+                                        "type": "string"
+                                    },
+                                    "token": {
+                                        "type": "string"
                                     }
+                                },
+                                "type": "object",
+                                "example": {
+                                    "state": "TAKEOFF",
+                                    "token": "1a1f91e2241e9056cf2dd4f9cf66e8da"
                                 }
                             }
                         }
                     }
                 },
-                "security": [
-                    {
-                        "api_key": []
+                "responses": {
+                    "204": {
+                        "description": "OK"
                     }
-                ]
+                }
             }
         }
     }
