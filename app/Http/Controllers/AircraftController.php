@@ -39,13 +39,13 @@ class AircraftController extends Controller
             $query->where($fieldname, $fieldvalue); //filter by a single field name
         }
         $records = $this->paginate($query, Aircraft::listFields());
-        Log::info($records);
+        
         return $this->respond($records);
     }
 
     public function updateLocation(Request $request)
     {
-        Log::info($request);
+        
         try {
             //code...
             $callsign = $request->callsign;
@@ -156,6 +156,8 @@ class AircraftController extends Controller
         if (Schema::hasColumn('trackers', $tracker_column)) {
 
             if ($tracker->runway_available == false) {
+                $request_status = 0; // rejected
+                $this->logAircraftRequest($aircraft, $request_type, $request_status);
                 return response('Runway not available', 409);
             }
             $is_allowed = $tracker->$tracker_column;
@@ -163,6 +165,8 @@ class AircraftController extends Controller
 
             if (!$is_allowed) {
 
+                $request_status = 0; // rejected
+                $this->logAircraftRequest($aircraft, $request_type, $request_status);
                 return response('Cannot perform action', 409);
 
             } else {
@@ -182,7 +186,8 @@ class AircraftController extends Controller
 
                 $aircraft->save();
                 $tracker->save();
-
+                $request_status = 1; // accepted
+                $this->logAircraftRequest($aircraft, $request_type, $request_status);
                 return response('Accepted', 204);
             }
 
