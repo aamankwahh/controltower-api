@@ -253,7 +253,7 @@ class AircraftController extends Controller
 
             $request_status = 0; // rejected
             $this->logAircraftRequest($aircraft, $request_type, $request_status,$state);
-            return response('Action not allowed', 409);
+            return response('Action not allowed based on previous state', 409);
 
         }
 
