@@ -100,7 +100,40 @@ class WeatherController extends Controller
             return response('Error.Unable to retrieve info',500);
         }
 
-       
+    }
 
+    //Index route for admin ui
+    public function index(){
+
+        $weather_record=Weather::latest()->first();
+
+        if($weather_record){
+            $weather_info = json_decode($weather_record->response,true);
+
+
+            $description=$weather_info['weather'][0]['description'];
+            $temp=$weather_info['main']['temp'];
+
+            $visibility=$weather_info['visibility'];
+            $wind_speed=$weather_info['wind']['speed'];
+
+            $wind_deg=$weather_info['wind']['deg'];
+            
+            $weather_response=array(
+                "description"=>$description,
+                "temperature"=>$temp,
+                 "visibility"=>$visibility,
+                "wind"=>array(
+                    "speed"=>$wind_speed,
+                    "deg"=>$wind_deg
+                ),
+                "last_update"=>$weather_record->updated_at);
+          
+            return response()->json(["weather"=>$weather_response]);
+        }else{
+           
+            return response()->json(["message"=>"No records available"],204);
+        }
+       
     }
 }

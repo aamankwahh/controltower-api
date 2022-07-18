@@ -7,6 +7,7 @@ use App\Http\Controllers\AircraftController;
 use App\Http\Controllers\TrafficLogController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\WeatherController;
+use App\Http\Controllers\ParkingSpotController;
 // use App\Http\Middleware\CheckAuthIdentity;
 
 
@@ -42,6 +43,10 @@ Route::middleware(['auth:api'])->group(function () {
 	Route::post('traffic/add', [TrafficLogController::class,'add']);	
 	Route::any('traffic/edit/{rec_id}', [TrafficLogController::class,'edit']);	
 	Route::any('traffic/delete/{rec_id}', [TrafficLogController::class,'delete']);
+
+	//Dashboard Routes
+	Route::get('weather/update', [WeatherController::class,'index']);
+	Route::get('parking/overview', [ParkingSpotController::class,'index']);
 });
 
 
