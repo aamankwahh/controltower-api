@@ -244,8 +244,14 @@ class AircraftController extends Controller
         $allowable_actions = config('constants.allowable_actions'); //Array of correct verbs
         $state = $request->state; // get state value
         $callsign = $request->callsign;
-        $aircraft = Aircraft::where('callsign', '=', $callsign)->firstOrFail();
-
+        try {
+            //code...
+            $aircraft = Aircraft::where('callsign', '=', $callsign)->firstOrFail();
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response('Bad Request',400);
+        }
+      
         $tracker = Tracker::firstOrFail();
 
         //Check action is allowed based on previous state
