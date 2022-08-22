@@ -7,7 +7,7 @@ use App\Models\Aircraft;
 use App\Models\ParkingSpot;
 use App\Models\RequestLog;
 use App\Models\Tracker;
-use App\Models\RequestLog;
+
 use Illuminate\Support\Facades\Log;
 
 class TowLandedAircraft extends Command
@@ -63,21 +63,15 @@ class TowLandedAircraft extends Command
         $aircraft->state="PARKED";
         $aircraft->save();
 
-<<<<<<< HEAD
+
         $request_log = new RequestLog();
         $request_log->request_type="STATE_CHANGE";
         $request_log->action="TOW";
         $request_log->status=1;
         $request_log->aircraft_id=$aircraft->id;
         $request_log->save();
-=======
-        $log = new RequestLog();
-        $log->aircraft_id = $aircraft->id;
-        $log->request_type = "STATE_CHANGE";
-        $log->status = 1;
-        $log->action="PARKED";
-        $log->save();
->>>>>>> 0a05e33775c543919e831fb002308b00e03c6ca0
+
+      
         }
        
        
