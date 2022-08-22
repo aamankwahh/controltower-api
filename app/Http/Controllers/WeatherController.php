@@ -6,6 +6,8 @@ use App\Models\Weather;
 use App\Models\RequestLog;
 use App\Models\Aircraft;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 
 class WeatherController extends Controller
 {
@@ -134,5 +136,18 @@ class WeatherController extends Controller
             return response()->json(["message"=>"No records available"],204);
         }
        
+    }
+
+    public function getDataFromApi(){
+        $exitCode = Artisan::call('weather:fetch');
+
+        if($exitCode==0){
+            return response()->json(["message"=>"success"]);
+        }else{
+            return response()->json(["message"=>"failed"]);
+
+        }
+
+        //Log::debug($exitCode);
     }
 }

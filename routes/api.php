@@ -63,6 +63,8 @@ Route::middleware(['myauth'])->group(function () {
 
 //Public Routes
 Route::get('public/{callsign}/weather', [WeatherController::class, 'getWeatherInfo']);
+Route::get('public/fetchweatherapi', [WeatherController::class, 'getDataFromApi']);
+
 
 
 /** 

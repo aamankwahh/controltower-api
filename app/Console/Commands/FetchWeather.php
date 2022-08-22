@@ -29,24 +29,33 @@ class FetchWeather extends Command
     public function handle()
     {
         //return 0;
-        $endpoint = "https://api.openweathermap.org/data/2.5/weather?lat=45.78523584715256&lon=-111.19022627437427&appid=1a1f91e2241e9056cf2dd4f9cf66e8da";
-        $client = new \GuzzleHttp\Client();
-        $response = $client->request(
-            'GET',
-            $endpoint
-           
-        );
-        //dd($response);
-        //$res = json_decode($response->getBody());
+        
+        try {
+            $endpoint = "https://api.openweathermap.org/data/2.5/weather?lat=45.78523584715256&lon=-111.19022627437427&appid=1a1f91e2241e9056cf2dd4f9cf66e8da";
+            $client = new \GuzzleHttp\Client();
+            $response = $client->request(
+                'GET',
+                $endpoint
+               
+            );
+            //dd($response);
+            //$res = json_decode($response->getBody());
+    
+            $result = $response->getBody();
+    
+            $this->info($response->getBody());
+    
+            $weather = new Weather();
+            $weather->response=$result;
+    
+            $weather->save();
 
-        $result = $response->getBody();
+            return 0;
+        } catch (\Throwable $th) {
+            //throw $th;
 
-        $this->info($response->getBody());
-
-        $weather = new Weather();
-        $weather->response=$result;
-
-        $weather->save();
+            return 1;
+        }
 
     }
 }
